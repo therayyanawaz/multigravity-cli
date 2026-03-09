@@ -29,8 +29,12 @@ foreach ($path in ($env:PATH -split ';')) {
 }
 
 if (!$IN_PATH) {
-    Write-Host "Warning: $INSTALL_DIR is not in your PATH."
-    Write-Host "  Please add it to your PATH environment variable to use multigravity from anywhere."
+    Write-Step "Adding $INSTALL_DIR to user PATH..."
+    $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+    $newPath = if ($userPath) { "$userPath;$INSTALL_DIR" } else { "$INSTALL_DIR" }
+    [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
+    $env:PATH = "$env:PATH;$INSTALL_DIR"
+    Write-Host "  Added to PATH! You may need to restart your terminal for changes to take effect."
     Write-Host ""
 }
 
@@ -43,7 +47,7 @@ $wrapper = @"
 powershell.exe -ExecutionPolicy Bypass -File "%~dp0\multigravity.ps1" %*
 "@
 
-$wrapper | Out-File -Encoding ASCII -FilePath "$INSTALL_DIR\multigravity.bat" -Force
+$wrapper | Out-File -Encoding ASCII -FilePath "$INSTALL_DIR\multigravity.cmd" -Force
 
 Write-Host ""
 Write-Host "✓ Multigravity installed successfully!"

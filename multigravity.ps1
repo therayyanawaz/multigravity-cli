@@ -11,10 +11,13 @@ param (
     [string]$arg1,
 
     [Parameter(Position = 2, Mandatory = $false)]
-    [string]$arg2
+    [string]$arg2,
+
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$ForwardArgs
 )
 
-$BASE = "$env:USERPROFILE\AntigravityProfiles"
+$BASE = if ($env:MULTIGRAVITY_HOME) { $env:MULTIGRAVITY_HOME } else { "$env:USERPROFILE\AntigravityProfiles" }
 
 function Find-Antigravity {
     $paths = @(
@@ -33,7 +36,7 @@ function Find-Antigravity {
     return $null
 }
 
-$APP = Find-Antigravity
+$APP = if ($env:MULTIGRAVITY_APP) { $env:MULTIGRAVITY_APP } else { Find-Antigravity }
 
 function Write-Usage {
     Write-Host "Usage: multigravity <command> [args]"
@@ -71,7 +74,7 @@ function Invoke-CreateProfile {
 }
 
 function Invoke-LaunchProfile {
-    param($PROFILE)
+    param($PROFILE, $ArgsToForward)
     $PROFILE_DIR = "$BASE\$PROFILE"
 
     if (!(Test-Path $PROFILE_DIR)) {
@@ -91,7 +94,12 @@ function Invoke-LaunchProfile {
     $env:APPDATA = "$PROFILE_DIR\AppData\Roaming"
     $env:LOCALAPPDATA = "$PROFILE_DIR\AppData\Local"
     
-    Start-Process -FilePath $APP
+    if ($ArgsToForward) {
+        Start-Process -FilePath $APP -ArgumentList $ArgsToForward
+    }
+    else {
+        Start-Process -FilePath $APP
+    }
 }
 
 function Invoke-ListProfiles {
@@ -236,6 +244,11 @@ switch ($cmd) {
         exit 1
     }
     default {
-        Invoke-LaunchProfile $cmd
+        $AllArgs = @()
+        if ($arg1) { $AllArgs += $arg1 }
+        if ($arg2) { $AllArgs += $arg2 }
+        if ($ForwardArgs) { $AllArgs += $ForwardArgs }
+        
+        Invoke-LaunchProfile $cmd $AllArgs
     }
 }
