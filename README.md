@@ -17,10 +17,9 @@ No more logging in and out. Just switch profiles instantly or use them all at on
 
 ## Install
 
-### macOS
+### macOS / Linux
 
-Open the **Terminal** app on your Mac and paste this:
-Open Terminal and paste this:
+Open your terminal and paste this:
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/install.sh)"
@@ -35,8 +34,6 @@ irm https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/install
 ```
 
 That's it. Multigravity is now installed.
-
-> Linux note: Antigravity must already be installed. If it is not on your `PATH`, launch Multigravity with `MULTIGRAVITY_APP=/path/to/antigravity`.
 
 ---
 
@@ -54,6 +51,7 @@ multigravity new personal
 This also creates a clickable launcher:
 
 - macOS: `~/Applications/Multigravity <name>.app`
+- Windows: **Start Menu** shortcut
 - Linux: `~/.local/share/applications/multigravity-<name>.desktop`
 
 ### 2. Open a profile
@@ -98,7 +96,7 @@ Enable tab-completion for commands and profile names:
 multigravity completion
 ```
 
-Follow the instructions shown to add the setup to your `.zshrc` or `.bashrc`.
+Follow the instructions shown to add the setup to your shell profile (`.zshrc`, `.bashrc`, or PowerShell `$PROFILE`).
 
 ### Self-Update
 
@@ -161,18 +159,18 @@ multigravity help
 
 ## App Shortcuts
 
-Every profile automatically gets a **clickable app** in `~/Applications` (macOS) or a **Start Menu shortcut** (Windows) with the Multigravity icon — so you can open profiles directly, just like any other app.
+Every profile automatically gets a clickable launcher so you can open profiles directly without using the terminal:
+
+- **macOS**: App bundle in `~/Applications`
+- **Windows**: Shortcut in **Start Menu > Programs**
+- **Linux**: Desktop entry in `~/.local/share/applications`
 
 ---
 
 ## Credits
 
-- Windows support was added by **Samin Yeasar**.  
-  X: [@Solez_None](https://x.com/Solez_None)
-Every profile automatically gets a clickable launcher so you can open profiles directly without using the terminal:
-
-- macOS: app bundle in `~/Applications`
-- Linux: desktop entry in `~/.local/share/applications`
+- **Windows support** contributed by [Samin Yeasar](https://github.com/Solez-ai).
+- **Linux support** contributed by [Md Rayyan Nawaz](https://github.com/therayyanawaz).
 
 ---
 
