@@ -393,11 +393,16 @@ launch_profile() {
 list_profiles() {
   local entries=""
   local dir
+  local raw=${1-}
 
-  echo "Existing profiles:"
+  if [ "$raw" != "--raw" ]; then
+    echo "Existing profiles:"
+  fi
 
   if [ ! -d "$BASE" ]; then
-    echo "(none)"
+    if [ "$raw" != "--raw" ]; then
+      echo "(none)"
+    fi
     return 0
   fi
 
@@ -407,7 +412,9 @@ list_profiles() {
   done
 
   if [ -z "$entries" ]; then
-    echo "(none)"
+    if [ "$raw" != "--raw" ]; then
+      echo "(none)"
+    fi
   else
     printf '%s' "$entries" | sort
   fi
@@ -499,6 +506,99 @@ update_cli() {
   fi
 }
 
+help_completion() {
+  local shell_name
+  shell_name="$(basename "$SHELL")"
+
+  echo "To enable autocompletion, add the following to your shell profile:"
+  echo ""
+  case "$shell_name" in
+    zsh)
+      echo "  # Add to ~/.zshrc"
+      echo '  source <(multigravity completion zsh)'
+      ;;
+    bash)
+      echo "  # Add to ~/.bashrc"
+      echo '  source <(multigravity completion bash)'
+      ;;
+    *)
+      echo "  # Your shell ($shell_name) is not natively supported for completion."
+      ;;
+  esac
+  echo ""
+  echo "Then restart your terminal or run: source ~/.$shell_name""rc"
+}
+
+generate_completion() {
+  local shell_type=$1
+  case "$shell_type" in
+    zsh)
+      cat <<'EOF'
+#compdef multigravity
+_multigravity() {
+    local -a commands
+    commands=(
+        'new:Create a new profile'
+        'list:List existing profiles'
+        'rename:Rename a profile'
+        'delete:Delete a profile'
+        'update:Update multigravity'
+        'completion:Setup shell completion'
+        'help:Show help'
+    )
+    local curcontext="$curcontext" state line
+    _arguments -C '1: :->command' '*: :->args'
+    case $state in
+        command)
+            _describe -t commands 'multigravity command' commands
+            local -a profiles
+            profiles=($(multigravity list --raw 2>/dev/null))
+            (( ${#profiles} > 0 )) && _describe -t profiles 'profile' profiles
+            ;;
+        args)
+            case $line[1] in
+                rename|delete|help)
+                    local -a profiles
+                    profiles=($(multigravity list --raw 2>/dev/null))
+                    (( ${#profiles} > 0 )) && _describe -t profiles 'profile' profiles
+                    ;;
+            esac
+            ;;
+    esac
+}
+_multigravity "$@"
+EOF
+      ;;
+    bash)
+      cat <<'EOF'
+_multigravity_completions() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="new list rename delete update completion help"
+
+    if [[ ${COMP_CWORD} -eq 1 ]] ; then
+        local profiles=$(multigravity list --raw 2>/dev/null)
+        COMPREPLY=( $(compgen -W "${opts} ${profiles}" -- ${cur}) )
+        return 0
+    fi
+
+    case "${prev}" in
+        delete|rename)
+            local profiles=$(multigravity list --raw 2>/dev/null)
+            COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
+            return 0
+            ;;
+    esac
+}
+complete -F _multigravity_completions multigravity
+EOF
+      ;;
+  esac
+}
+
+
 
 usage() {
   cat <<EOF
@@ -510,6 +610,7 @@ Commands:
   rename <old> <new>    Rename a profile (updates its shortcut)
   delete <name>         Delete a profile and its data
   update                Update multigravity to the latest version
+  completion            Show setup instructions for shell completion
   <name> [args...]      Launch Antigravity with the given profile
   help                  Show this help
 
@@ -526,7 +627,7 @@ case "$cmd" in
     new_profile "${2-}"
     ;;
   list)
-    list_profiles
+    list_profiles "${2-}"
     ;;
   rename)
     rename_profile "${2-}" "${3-}"
@@ -536,6 +637,13 @@ case "$cmd" in
     ;;
   update)
     update_cli
+    ;;
+  completion)
+    if [ -n "${2-}" ]; then
+      generate_completion "$2"
+    else
+      help_completion
+    fi
     ;;
   help | --help | -h)
     usage
