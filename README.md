@@ -8,7 +8,7 @@
 
 **Run multiple Antigravity IDE profiles at the same time — each with its own accounts, settings, and extensions.**
 
-> Note: Multigravity currently only supports macOS.
+> Note: Multigravity supports macOS and Windows.
 
 No more logging in and out. Just switch profiles instantly or use them all at once!
 
@@ -16,10 +16,20 @@ No more logging in and out. Just switch profiles instantly or use them all at on
 
 ## Install
 
+### macOS
+
 Open the **Terminal** app on your Mac and paste this:
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/install.sh)"
+```
+
+### Windows
+
+Open **PowerShell** and paste this:
+
+```powershell
+irm https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/install.ps1 | iex
 ```
 
 That's it. Multigravity is now installed.
@@ -90,4 +100,10 @@ multigravity help
 
 ## App Shortcuts
 
-Every profile automatically gets a **clickable app** in `~/Applications` with the Multigravity icon — so you can open profiles directly from Finder or pin them to the Dock, just like any other app.
+Every profile automatically gets a **clickable app** in `~/Applications` (macOS) or a **Start Menu shortcut** (Windows) with the Multigravity icon — so you can open profiles directly, just like any other app.
+
+---
+
+## Credits
+
+- Windows Support Added By Samin Yeasar - [Follow on X](https://x.com/Solez_None)
