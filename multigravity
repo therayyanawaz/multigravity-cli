@@ -486,6 +486,32 @@ rename_profile() {
   print_info "Renamed profile '$old' to '$new'"
 }
 
+clone_profile() {
+  local src=$1
+  local dest=$2
+  local src_path
+  local dest_path
+
+  validate_name "$src"
+  validate_name "$dest"
+
+  src_path="$(profile_dir "$src")"
+  dest_path="$(profile_dir "$dest")"
+
+  if [ ! -d "$src_path" ]; then
+    abort "source profile '$src' does not exist"
+  fi
+  if [ -d "$dest_path" ]; then
+    abort "destination profile '$dest' already exists"
+  fi
+
+  print_info "Cloning profile '$src' to '$dest'..."
+  cp -R "$src_path" "$dest_path"
+  create_shortcut "$dest"
+
+  print_info "Successfully cloned '$src' to '$dest'"
+}
+
 update_cli() {
   local script_url="https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/multigravity"
   local target
@@ -542,6 +568,7 @@ _multigravity() {
         'list:List existing profiles'
         'rename:Rename a profile'
         'delete:Delete a profile'
+        'clone:Clone an existing profile'
         'update:Update multigravity'
         'completion:Setup shell completion'
         'help:Show help'
@@ -557,7 +584,7 @@ _multigravity() {
             ;;
         args)
             case $line[1] in
-                rename|delete|help)
+                rename|delete|clone|help)
                     local -a profiles
                     profiles=($(multigravity list --raw 2>/dev/null))
                     (( ${#profiles} > 0 )) && _describe -t profiles 'profile' profiles
@@ -576,7 +603,7 @@ _multigravity_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="new list rename delete update completion help"
+    opts="new list rename delete clone update completion help"
 
     if [[ ${COMP_CWORD} -eq 1 ]] ; then
         local profiles=$(multigravity list --raw 2>/dev/null)
@@ -585,7 +612,7 @@ _multigravity_completions() {
     fi
 
     case "${prev}" in
-        delete|rename)
+        delete|rename|clone)
             local profiles=$(multigravity list --raw 2>/dev/null)
             COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
             return 0
@@ -609,6 +636,7 @@ Commands:
   list                  List existing profiles
   rename <old> <new>    Rename a profile (updates its shortcut)
   delete <name>         Delete a profile and its data
+  clone <src> <dest>    Clone an existing profile
   update                Update multigravity to the latest version
   completion            Show setup instructions for shell completion
   <name> [args...]      Launch Antigravity with the given profile
@@ -634,6 +662,9 @@ case "$cmd" in
     ;;
   delete)
     delete_profile "${2-}"
+    ;;
+  clone)
+    clone_profile "${2-}" "${3-}"
     ;;
   update)
     update_cli

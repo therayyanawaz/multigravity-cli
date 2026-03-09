@@ -66,6 +66,36 @@ multigravity work path/to/file.py
 multigravity list
 ```
 
+### 4. Clone a profile
+
+Duplicate an existing setup to a new profile:
+
+```bash
+multigravity clone work work-copy
+```
+
+---
+
+## Power User Features
+
+### Shell Autocompletion
+
+Enable tab-completion for commands and profile names:
+
+```bash
+multigravity completion
+```
+
+Follow the instructions shown to add the setup to your `.zshrc` or `.bashrc`.
+
+### Self-Update
+
+Keep multigravity up to date with one command:
+
+```bash
+multigravity update
+```
+
 ---
 
 ## Other Commands
@@ -107,3 +137,11 @@ Every profile automatically gets a clickable launcher so you can open profiles d
 
 - macOS: app bundle in `~/Applications`
 - Linux: desktop entry in `~/.local/share/applications`
+
+---
+
+## Links
+
+- [Repository](https://github.com/sujitagarwal/multigravity-cli)
+- [Profile](https://github.com/sujitagarwal)
+- [Star the Repository](https://github.com/sujitagarwal/multigravity-cli/stargazers)
