@@ -512,6 +512,74 @@ clone_profile() {
   print_info "Successfully cloned '$src' to '$dest'"
 }
 
+doctor_cli() {
+  local errors=0
+  local warnings=0
+
+  print_info "Checking multigravity environment..."
+
+  # 1. Platform Check
+  if platform &>/dev/null; then
+    echo "  [✓] Platform: $(platform)"
+  else
+    echo "  [✗] Platform: Unknown"
+    errors=$((errors + 1))
+  fi
+
+  # 2. Antigravity Installation
+  if app=$(find_app); then
+    echo "  [✓] Antigravity: Found at $app"
+  else
+    echo "  [✗] Antigravity: Not found. Ensure it is installed or set MULTIGRAVITY_APP."
+    errors=$((errors + 1))
+  fi
+
+  # 3. Path Check
+  local installed
+  installed="$(command -v multigravity 2>/dev/null || true)"
+  if [ -n "$installed" ]; then
+    echo "  [✓] Global Binary: $installed"
+  else
+    echo "  [!] Global Binary: Not found in PATH. Run install script or update PATH."
+    warnings=$((warnings + 1))
+  fi
+
+  # 4. Icon Check (macOS)
+  if [ "$(platform)" = "darwin" ]; then
+    local icon_path
+    icon_path="$(dirname "$(script_path)")/icon.icns"
+    if [ -f "$icon_path" ]; then
+      echo "  [✓] Application Icon: Found"
+    else
+      echo "  [!] Application Icon: Missing ($icon_path). Shortcuts will have default icons."
+      warnings=$((warnings + 1))
+    fi
+  fi
+
+  # 5. Base Directory
+  if [ -d "$BASE" ]; then
+    if [ -w "$BASE" ]; then
+      echo "  [✓] Profile storage: $BASE (writable)"
+    else
+      echo "  [✗] Profile storage: $BASE (NOT writable)"
+      errors=$((errors + 1))
+    fi
+  else
+    echo "  [!] Profile storage: $BASE (Not yet created)"
+  fi
+
+  echo ""
+  if [ $errors -eq 0 ]; then
+    if [ $warnings -eq 0 ]; then
+      print_info "✓ Your environment looks perfect!"
+    else
+      print_info "Found $warnings warning(s). Multigravity should still work, but some features might be degraded."
+    fi
+  else
+    print_info "✗ Found $errors error(s) and $warnings warning(s). Please fix the errors above."
+  fi
+}
+
 update_cli() {
   local script_url="https://raw.githubusercontent.com/sujitagarwal/multigravity-cli/main/multigravity"
   local target
@@ -570,6 +638,7 @@ _multigravity() {
         'delete:Delete a profile'
         'clone:Clone an existing profile'
         'update:Update multigravity'
+        'doctor:Run system diagnosis'
         'completion:Setup shell completion'
         'help:Show help'
     )
@@ -603,7 +672,7 @@ _multigravity_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="new list rename delete clone update completion help"
+    opts="new list rename delete clone update doctor completion help"
 
     if [[ ${COMP_CWORD} -eq 1 ]] ; then
         local profiles=$(multigravity list --raw 2>/dev/null)
@@ -638,6 +707,7 @@ Commands:
   delete <name>         Delete a profile and its data
   clone <src> <dest>    Clone an existing profile
   update                Update multigravity to the latest version
+  doctor                Run a system diagnosis
   completion            Show setup instructions for shell completion
   <name> [args...]      Launch Antigravity with the given profile
   help                  Show this help
@@ -668,6 +738,9 @@ case "$cmd" in
     ;;
   update)
     update_cli
+    ;;
+  doctor)
+    doctor_cli
     ;;
   completion)
     if [ -n "${2-}" ]; then

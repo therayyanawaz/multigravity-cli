@@ -96,6 +96,14 @@ Keep multigravity up to date with one command:
 multigravity update
 ```
 
+### System Diagnosis
+
+Check if your environment is set up correctly:
+
+```bash
+multigravity doctor
+```
+
 ---
 
 ## Other Commands
